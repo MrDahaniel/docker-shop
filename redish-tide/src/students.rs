@@ -31,20 +31,25 @@ pub async fn list(req: Request<State>) -> tide::Result<Response> {
         .get_connection()
         .expect("Coundn't connect with redis");
 
-    let query: Vec<Student> = conn.json_get("students", "$")?;
+    let query: String = conn.json_get("students", "$")?;
+    let json_q: serde_json::Value = serde_json::from_str(&query)?;
 
     let mut res = tide::Response::new(200);
-    res.set_body(tide::Body::from_json(&query)?);
+    res.set_body(tide::Body::from_json(&json_q)?);
 
     Ok(res)
 }
 
-pub async fn create(req: Request<State>) -> tide::Result<Response> {
-    let _conn = req
+pub async fn create(mut req: Request<State>) -> tide::Result<Response> {
+    let mut conn = req
         .state()
         .db
         .get_connection()
         .expect("Coundn't connect with redis");
+
+    let body: Student = req.body_json().await?;
+
+    conn.json_set("students", format!("${}", body.code), &body)?;
 
     Ok(tide::Response::new(200))
 }

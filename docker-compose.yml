@@ -1,14 +1,27 @@
 version: "3.9"
 services:
-  redis:
-    image: redis/redis-stack
-    volumes:
-      - redis_data:/data:rw
-    ports:
-      - 6379:8080
-    restart: unless-stopped
-  
-  api: 
-    image: tide
-    ports: 
-      - 8080-6379
+    redis:
+        container_name: redis_db
+        build:
+            context: ./redis_db
+        volumes:
+            - ./redis_data:/data
+        ports:
+            - "6379:6379"
+        networks:
+            - redis-net
+        restart: unless-stopped
+
+    api:
+        container_name: redish_tide
+        build:
+            context: ./redish-tide
+        ports:
+            - "8080:8080"
+        networks:
+            - redis-net
+        links:
+            - "redis:redis_db"
+
+networks:
+    redis-net: {}

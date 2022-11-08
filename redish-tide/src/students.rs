@@ -6,6 +6,8 @@ use tide::Response;
 use redis::JsonCommands;
 use redis_derive::{FromRedisValue, ToRedisArgs};
 
+use tracing::info;
+
 #[derive(Debug, Clone, Deserialize, Serialize, FromRedisValue, ToRedisArgs)]
 struct StudentData {
     name: String,
@@ -25,13 +27,22 @@ pub async fn _get(_req: Request<State>) -> tide::Result<()> {
 }
 
 pub async fn list(req: Request<State>) -> tide::Result<Response> {
-    let mut conn = req
-        .state()
-        .db
-        .get_connection()
-        .expect("Coundn't connect with redis");
+    let mut conn = match req.state().db.get_connection() {
+        Ok(c) => c,
+        Err(e) => {
+            info!("{}", e.to_string());
+            return Ok(Response::new(500));
+        }
+    };
 
-    let query: String = conn.json_get("students", "$")?;
+    let query: String = match conn.json_get("students", ".") {
+        Ok(s) => s,
+        Err(e) => {
+            info!("{}", e.to_string());
+            return Ok(Response::new(500));
+        }
+    };
+
     let json_q: serde_json::Value = serde_json::from_str(&query)?;
 
     let mut res = tide::Response::new(200);

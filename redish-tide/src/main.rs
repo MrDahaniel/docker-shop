@@ -12,9 +12,11 @@ use state::State;
 async fn main() -> tide::Result<()> {
     dotenv::dotenv().ok();
 
+    tracing_subscriber::fmt::init();
+
     // Get the .env variables
-    let db_url = std::env::var("DATABASE_URL")
-        .expect("Missing `DATABASE_URL` env variable, needed for running the server");
+    let db_url =
+        std::env::var("DATABASE_URL").unwrap_or_else(|_| "redis://redis_db:6379".to_string());
     let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
 
     let state = State::new(&db_url).await?;

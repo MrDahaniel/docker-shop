@@ -1,17 +1,9 @@
-FROM rust:1.64 as builder
+FROM rust:1.64 
 
-RUN USER=root cargo new --bin redish_tide
-WORKDIR .
-COPY ./Cargo.toml ./Cargo.toml
-RUN cargo build --release
-RUN rm src/*.rs
+WORKDIR /usr/src/redish_tide
+COPY . .
 
-ADD . ./
+RUN cargo install --path .
 
-RUN rm ./target/release/deps/redish_tide
-RUN cargo build --release
+CMD ["redish-tide"]
 
-FROM alpine:latest
-ARG APP=/usr/src/app
-
-EXPOSE 8000

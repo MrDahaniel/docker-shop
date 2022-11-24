@@ -15,8 +15,7 @@ async fn main() -> tide::Result<()> {
     tracing_subscriber::fmt::init();
 
     // Get the .env variables
-    let db_url =
-        std::env::var("DATABASE_URL").unwrap_or_else(|_| "redis://redis_db:6379".to_string());
+    let db_url = std::env::var("DATABASE_URL").unwrap(); //_or_else(|_| "redis://redis_db:6379".to_string());
     let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
 
     let state = State::new(&db_url).await?;
@@ -25,6 +24,6 @@ async fn main() -> tide::Result<()> {
 
     student_router(&mut app).await;
 
-    app.listen(format!("127.0.0.1:{}", port)).await?;
+    app.listen(format!("0.0.0.0:{}", port)).await?;
     Ok(())
 }

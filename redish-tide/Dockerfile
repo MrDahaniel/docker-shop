@@ -1,7 +1,8 @@
 FROM rust:1.64 
 
-WORKDIR /redish_tide
-COPY . .
+RUN git clone https://github.com/MrDahaniel/docker-shop.git
+
+WORKDIR /docker-shop/redish-tide
 
 RUN cargo install --path .
 
